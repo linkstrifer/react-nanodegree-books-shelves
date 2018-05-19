@@ -18,7 +18,7 @@ class BooksApp extends React.Component {
   }
 
   moveToShelf = (data) => {
-    BooksAPI.update(data.book, data.self)
+    BooksAPI.update(data.book, data.shelf)
       .then(data => {
         const shelves = Object.getOwnPropertyNames(data);
         const booksCopy = this.state.books;
@@ -35,6 +35,56 @@ class BooksApp extends React.Component {
       });
   }
 
+  addToShelf = (data) => {
+    BooksAPI.update(data.book, data.shelf)
+      .then(response => {
+        const shelves = Object.getOwnPropertyNames(response);
+        const booksCopy = this.state.books;
+
+        booksCopy.push({
+          ...data.book,
+          shelf: data.shelf,
+        });
+
+        shelves.forEach(shelf => {
+          response[shelf].forEach(bookId => {
+            const currentBook = booksCopy.find(book => book.id === bookId);
+
+            currentBook.shelf = shelf;
+          });
+        });
+
+        this.setState({ books: booksCopy });
+      });
+  }
+
+  search = (query) => {
+    const { books } = this.state;
+
+    return BooksAPI.search(query)
+      .then(response => {
+        let results = response && !response.error ? response : [];
+
+        if (results.length > 0) {
+          results = results.map(resultBook => {
+            const resultBookCopy = resultBook;
+            const exists = books.find(book => book.id === resultBook.id);
+
+            if (exists) {
+              resultBookCopy.shelf = exists.shelf;
+            }
+
+            return resultBookCopy;
+          })
+          // books.forEach(book => {
+          //   results = results.find(resultBook => resultBook.id !== book.id);
+          // });
+        }
+
+        return results;
+      });
+  }
+
   render() {
     return (
       <div className="app">
@@ -44,7 +94,13 @@ class BooksApp extends React.Component {
             move={this.moveToShelf}
           />
         )} />
-        <Route path="/search" component={SearchComponent} />
+        <Route path="/search" render={() => (
+          <SearchComponent
+            add={this.addToShelf}
+            books={this.state.books}
+            search={this.search}
+          />
+        )} />
       </div>
     );
   }

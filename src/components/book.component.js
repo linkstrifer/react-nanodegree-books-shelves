@@ -7,7 +7,7 @@ const BookComponent = ({ book, move }) => (
         <div
           className="book-cover"
           style={{
-            backgroundImage: `url('${book.imageLinks.smallThumbnail}')`,
+            backgroundImage: `url('${book.imageLinks && book.imageLinks.smallThumbnail}')`,
             height: 193,
             width: 128,
           }}
@@ -17,10 +17,10 @@ const BookComponent = ({ book, move }) => (
             onChange={(event) => {
               move({
                 book,
-                self: event.target.value,
+                shelf: event.target.value,
               });
             }}
-            defaultValue={book.shelf}
+            defaultValue={book.shelf || 'none'}
           >
             <option value="none" disabled>Move to...</option>
             <option value="currentlyReading">Currently Reading</option>
@@ -34,7 +34,7 @@ const BookComponent = ({ book, move }) => (
         {book.title}
       </div>
       <div className="book-authors">
-        {book.authors.join(', ')}
+        {book.authors && book.authors.join(', ')}
       </div>
     </div>
   </li>
